@@ -354,6 +354,13 @@ bool TGAImage::scale(int w, int h) {
     return true;
 }
 
+
+/*
+ *
+ * Méthode utilisé pour l'unification de deux images (rouge et bleu)
+ * En une image avec des nuances de gris
+ * Méthode récuperé sur git (tinyraytracer)
+ */
 TGAImage TGAImage::unification(TGAImage& image) {
 
     TGAImage res(width, height,TGAImage::RGB);
@@ -376,8 +383,6 @@ TGAImage TGAImage::unification(TGAImage& image) {
             float avg2 = (c2[0]+c2[1]+c2[2])/3.;
 
             res.set(i,j,TGAColor(255*avg1,0,255*avg2,255));
-
-            //res.set(i,j, TGAColor(data[j] + image.data[j], data[j] + image.data[j], data[j] + image.data[j], 255));
         }
     }
 

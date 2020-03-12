@@ -226,7 +226,7 @@ int main(int argc, char** argv) {
 
     // Affichage de l'anaglyph
     frame.flip_vertically(); // to place the origin in the bottom left corner of the image
-    frame.write_tga_file("autoglyph.tga");
+    frame.write_tga_file("anaglyph.tga");
 
 
     // Affichage de la texture
