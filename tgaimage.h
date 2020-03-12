@@ -58,6 +58,12 @@ struct TGAColor {
         for (int i=0; i<4; i++) res.bgra[i] = bgra[i]*intensity;
         return res;
     }
+
+    TGAColor operator +(TGAColor intensity) const {
+        TGAColor res = *this;
+        for (int i=0; i<4; i++) res.bgra[i] = (bgra[i]+intensity[i])%255;
+        return res;
+    }
 };
 
 class TGAImage {
@@ -92,6 +98,7 @@ public:
     int get_bytespp();
     unsigned char *buffer();
     void clear();
+    TGAImage fusionner(TGAImage& i);
 };
 
 #endif //__IMAGE_H__

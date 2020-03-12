@@ -8,13 +8,18 @@
 
 Model *model        = NULL;
 
+const int delta =60;
 const int width  = 800;
 const int height = 800;
 
-Vec3f light_dir(0,0,-1);
-Vec3f       eye(1,1,3);
+
+Vec3f light_dir(0,0,-3);
+Vec3f       eye(2,0,3);
 Vec3f    center(0,0,0);
 Vec3f        up(0,1,0);
+
+
+const float eyesep   = 0.2;
 
 struct Shader : public IShader {
     mat<2,3,float> varying_uv;  // triangle uv coordinates, written by the vertex shader, read by the fragment shader
@@ -59,7 +64,9 @@ struct Shader : public IShader {
     }
 };
 
-void triangleTest(Vec3i t0, Vec3i t1, Vec3i t2, TGAImage &image, TGAColor color, float *zbuffer) {
+
+
+void triangleTest(Vec3f t0, Vec3f t1, Vec3f t2, TGAImage &image, TGAColor color, float *zbuffer) {
     if (t0.y==t1.y && t0.y==t2.y) return; // i dont care about degenerate triangles
     if (t0.y>t1.y) std::swap(t0, t1);
     if (t0.y>t2.y) std::swap(t0, t2);
@@ -86,6 +93,7 @@ void triangleTest(Vec3i t0, Vec3i t1, Vec3i t2, TGAImage &image, TGAColor color,
     }
 }
 
+
 int main(int argc, char** argv) {
     if (2>argc) {
         std::cerr << "Usage: " << argv[0] << " obj/model.obj" << std::endl;
@@ -93,19 +101,25 @@ int main(int argc, char** argv) {
     }
 
     float *zbuffer = new float[width*height];
-    for (int i=0; i<width*height; i++) {
-        zbuffer[i] = std::numeric_limits<float>::min();
-    }
+
+    for (int i=width*height; i--; zbuffer[i] = -std::numeric_limits<float>::max());
+
     TGAImage frame(width, height, TGAImage::RGB);
+
+    TGAImage gauche(width, height, TGAImage::RGB);
+    TGAImage droite(width, height, TGAImage::RGB);
+
+
+
     lookat(eye, center, up);
     viewport(width/8, height/8, width*3/4, height*3/4);
     projection(-1.f/(eye-center).norm());
     light_dir = proj<3>((Projection*ModelView*embed<4>(light_dir, 0.f))).normalize();
 
+
     for (int m=1; m<argc; m++) {
         model = new Model(argv[m]);
         Shader shader;
-
 
 
         for (int i=0; i<model->nfaces(); i++) {
@@ -114,25 +128,63 @@ int main(int argc, char** argv) {
             Vec3f world_coords[3];
             Vec3i screen_coords[3];
 
+            Vec3f gauche_coords[3];
+            Vec3f droite_coords[3];
+
+
             for (int j=0; j<3; j++) {
                 shader.vertex(i, j);
 
                 Vec3f v = model->vert(face[j]);
+
+                // Camera transform
                 screen_coords[j] = Vec3i((v.x+1.)*width/2., (v.y+1.)*height/2., (v.z+1.)*255/2.);
+
+
+
+                Matrix res = Viewport * Projection;
+
+                Matrix trans_left =  translate(-eyesep/2,0,0);
+                Matrix trans_right = translate(eyesep/2,0,0);
+
+                Matrix ModelViewLeft  = ModelView * trans_left;
+                Matrix ModelViewRight = ModelView * trans_right;
+
+                gauche_coords[j]=m2v(res * ModelViewLeft  * v2m(v));
+                droite_coords[j]=m2v(res * ModelViewRight * v2m(v));
+
+
+
                 world_coords[j]  = v;
+
             }
 
             Vec3f n = cross((world_coords[2] - world_coords[0]),(world_coords[1] - world_coords[0]));
 
             n.normalize();
             float intensity = n*light_dir;
+
+            //printf("Intensity %f",intensity);
             if (intensity>0) {
-                triangleTest(screen_coords[0], screen_coords[1], screen_coords[2], frame, TGAColor(intensity*255, intensity*255, intensity*255, 255), zbuffer);
+
+                triangleTest(droite_coords[0], droite_coords[1], droite_coords[2], droite, TGAColor(intensity*255,0,0), zbuffer);
+                triangleTest(gauche_coords[0], gauche_coords[1], gauche_coords[2], gauche, TGAColor(0, 0, intensity*255), zbuffer);
+
+                //triangleTest(screen_coords[0],screen_coords[1],screen_coords[2],frame,TGAColor(intensity*255, intensity*255, intensity*255, 255), zbuffer);
+
+
+
+                //triangle(shader.varying_tri, shader, frame, zbuffer,TGAColor(intensity*255, intensity*255, intensity*255, 255));
             }
-            //triangle(shader.varying_tri, shader, frame, zbuffer);
+
+            //triangle(shader.varying_tri, shader, frame, zbuffer,TGAColor(intensity*255, intensity*255, intensity*255, 255));
+
+
         }
         delete model;
     }
+
+    frame = gauche.fusionner(droite);
     frame.flip_vertically(); // to place the origin in the bottom left corner of the image
     frame.write_tga_file("framebuffer.tga");
 

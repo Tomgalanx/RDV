@@ -1,3 +1,3 @@
 # RDV
 
-![MODELE 3D](3D-SANS_ANAGLYPHE.png)
+![MODELE 3D](../images/3D-SANS_ANAGLYPHE.png)

@@ -9,7 +9,7 @@ Matrix Projection;
 
 IShader::~IShader() {}
 
-void viewport(int x, int y, int w, int h) {
+Matrix viewport(int x, int y, int w, int h) {
     Viewport = Matrix::identity();
     Viewport[0][3] = x+w/2.f;
     Viewport[1][3] = y+h/2.f;
@@ -17,6 +17,8 @@ void viewport(int x, int y, int w, int h) {
     Viewport[0][0] = w/2.f;
     Viewport[1][1] = h/2.f;
     Viewport[2][2] = 0;
+
+    return Viewport;
 }
 
 void projection(float coeff) {
@@ -24,7 +26,7 @@ void projection(float coeff) {
     Projection[3][2] = coeff;
 }
 
-void lookat(Vec3f eye, Vec3f center, Vec3f up) {
+Matrix lookat(Vec3f eye, Vec3f center, Vec3f up) {
     Vec3f z = (eye-center).normalize();
     Vec3f x = cross(up,z).normalize();
     Vec3f y = cross(z,x).normalize();
@@ -37,6 +39,8 @@ void lookat(Vec3f eye, Vec3f center, Vec3f up) {
         Tr[i][3] = -center[i];
     }
     ModelView = Minv*Tr;
+
+    return ModelView;
 }
 
 Vec3f barycentric(Vec2f A, Vec2f B, Vec2f C, Vec2f P) {
@@ -52,7 +56,7 @@ Vec3f barycentric(Vec2f A, Vec2f B, Vec2f C, Vec2f P) {
     return Vec3f(-1,1,1); // in this case generate negative coordinates, it will be thrown away by the rasterizator
 }
 
-void triangle(mat<4,3,float> &clipc, IShader &shader, TGAImage &image, float *zbuffer) {
+void triangle(mat<4,3,float> &clipc, IShader &shader, TGAImage &image, float *zbuffer,TGAColor color1) {
     mat<3,4,float> pts  = (Viewport*clipc).transpose(); // transposed to ease access to each of the points
     mat<3,2,float> pts2;
     for (int i=0; i<3; i++) pts2[i] = proj<2>(pts[i]/pts[i][3]);
@@ -78,9 +82,39 @@ void triangle(mat<4,3,float> &clipc, IShader &shader, TGAImage &image, float *zb
             bool discard = shader.fragment(bc_clip, color);
             if (!discard) {
                 zbuffer[P.x+P.y*image.get_width()] = frag_depth;
-                image.set(P.x, P.y, color);
+                image.set(P.x, P.y, color1);
             }
         }
     }
+
 }
+
+Vec3f  m2v(Matrix1 m) {
+    return Vec3f (int(m[0][0]/m[3][0] + 0.5), int(m[1][0]/m[3][0] + 0.5), m[2][0]/m[3][0]);
+}
+
+
+Matrix1 v2m(Vec3f v) {
+
+    Matrix1 m;
+
+    for (int i = 0; i < 3; i++)
+    {
+        m[i][0] = v[i];
+    }
+    m[3][0] = 1.;
+    return m;
+}
+
+Matrix translate(float x, float y , float z) {
+    Matrix R = Matrix::identity();
+
+    R[0][3] = x;
+    R[1][3] = y;
+    R[2][3] = z;
+
+    return R;
+}
+
+
 

@@ -354,3 +354,33 @@ bool TGAImage::scale(int w, int h) {
     return true;
 }
 
+TGAImage TGAImage::fusionner(TGAImage& image) {
+
+    TGAImage res(width, height,TGAImage::RGB);
+
+    for (int j = 0; j < height; j++) {
+        for (int i = 0; i < width; i++) {
+
+            TGAColor c1 = this->get(i,j);
+            float max1 = std::max(c1[2], std::max(c1[1], c1[0]));
+            if (max1>1) c1 = c1*(1./max1);
+
+            TGAColor c2 = image.get(i,j);
+            float max2 = std::max(c2[2], std::max(c2[1], c2[0]));
+            if (max2>1) c2 = c2*(1./max2);
+
+
+
+            // B=0 G=1 R=2 A=3
+            float avg1 = (c1[0]+c1[1]+c1[2])/3.;
+            float avg2 = (c2[0]+c2[1]+c2[2])/3.;
+
+            res.set(i,j,TGAColor(255*avg1,0,255*avg2,255));
+
+            //res.set(i,j, TGAColor(data[j] + image.data[j], data[j] + image.data[j], data[j] + image.data[j], 255));
+        }
+    }
+
+    return res;
+}
+
