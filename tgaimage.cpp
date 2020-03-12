@@ -354,7 +354,7 @@ bool TGAImage::scale(int w, int h) {
     return true;
 }
 
-TGAImage TGAImage::fusionner(TGAImage& image) {
+TGAImage TGAImage::unification(TGAImage& image) {
 
     TGAImage res(width, height,TGAImage::RGB);
 

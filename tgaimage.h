@@ -98,7 +98,7 @@ public:
     int get_bytespp();
     unsigned char *buffer();
     void clear();
-    TGAImage fusionner(TGAImage& i);
+    TGAImage unification(TGAImage& i);
 };
 
 #endif //__IMAGE_H__

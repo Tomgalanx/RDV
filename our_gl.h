@@ -9,10 +9,7 @@ extern Matrix Viewport;
 
 Matrix viewport(int x, int y, int w, int h);
 void projection(float coeff=0.f); // coeff = -1/c
-Matrix lookat(Vec3f eye, Vec3f center, Vec3f up);
-Matrix1 v2m(Vec3f v);
-Vec3f m2v(Matrix1 m);
-Matrix translate(float x, float y , float z);
+void lookat(Vec3f eye, Vec3f center, Vec3f up);
 
 struct IShader {
     virtual ~IShader();
@@ -21,6 +18,6 @@ struct IShader {
 };
 
 //void triangle(Vec4f *pts, IShader &shader, TGAImage &image, float *zbuffer);
-void triangle(mat<4,3,float> &pts, IShader &shader, TGAImage &image, float *zbuffer,TGAColor color);
+void triangle(mat<4,3,float> &clipc, IShader &shader, TGAImage &image, float *zbuffer);
 #endif //__OUR_GL_H__
 
