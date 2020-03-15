@@ -6,7 +6,7 @@ make
 
 ./main .obj
 
-Deux images générés :
+Deux images générées :
 
   - 3D.tga (image en nuance de gris sans anaglyphe)
   - anaglyphe.tga (image en anaglyphe)
