@@ -1,5 +1,16 @@
 # RDV
 
+COMPILATION :
+
+make
+
+./main .obj
+
+Deux images générés :
+
+  - 3D.tga (image en nuance de gris sans anaglyphe)
+  - anaglyphe.tga (image en anaglyphe)
+
 
 Affichage 3D :
 ![MODELE 3D](images/3D-SANS_ANAGLYPHE.png)
